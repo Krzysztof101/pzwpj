@@ -26,6 +26,12 @@ public class SupplierDAO {
         int retVal = ROWS_AFFECTED;
         try {
             retVal = statement.executeUpdate();
+            ResultSet rs = statement.getGeneratedKeys();
+            if(rs.next())
+            {
+                int newId = rs.getInt(1);
+                newSupplier.setId(newId);
+            }
         }
         catch (SQLException e)
         {
@@ -63,7 +69,7 @@ public class SupplierDAO {
     public LinkedList<Supplier> getAllSuppliers() throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
-        String sql = "Select * from pzwpj_schema.suppliers join pzwpj_schema.addresses on pzwpj_schema.addresses.addressId = pzwpj_schema.suppliers.addressID";
+        String sql = "Select * from pzwpj_schema.suppliers join pzwpj_schema.addresses on pzwpj_schema.addresses.addressId = pzwpj_schema.suppliers.addressID;";
         PreparedStatement statement = conn.prepareStatement(sql);
         LinkedList<Supplier> suppliers = new LinkedList<>();
 
@@ -91,7 +97,55 @@ public class SupplierDAO {
         return suppliers;
     }
 
-    //TODO write getbyId, delete
+    public Supplier getSupplierById(int id) throws SQLException {
+        ConnectionPool manager = ConnectionPoolManager.getInstance();
+        Connection conn = manager.getConnection();
+        String sql = "Select * from pzwpj_schema.suppliers join pzwpj_schema.addresses on pzwpj_schema.addresses.addressId = pzwpj_schema.suppliers.addressID where pzwpj_schema.supplierId=?;";
+        PreparedStatement statement = conn.prepareStatement(sql);
+        statement.setInt(1, id);
+        Supplier supplier = null;
+        try {
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                Address compAddr = AddressDAO.buildUsingResultSet(rs, 4);
+
+                int idd = rs.getInt("supplierId");
+                String cmpName = rs.getString("companyName");
+                supplier = new Supplier(idd, cmpName, compAddr);
+            }
+        }
+        catch(SQLException e)
+        {
+            throw prepareInfoAboutError(e, ErrorCodes.SELECT_SINGLE_SUPPLIER_ERROR);
+        }
+        finally {
+            statement.close();
+            manager.releaseConnection(conn);
+        }
+        return supplier;
+    }
+
+    public int delete(Supplier supplierToDelete) throws SQLException {
+        ConnectionPool manager = ConnectionPoolManager.getInstance();
+        Connection conn = manager.getConnection();
+        String sql = "delete from pzwpj_schema.suppliers where pzwpj_schema.supplierId=?;";
+        PreparedStatement statement = conn.prepareStatement(sql);
+        statement.setInt(1, supplierToDelete.getId());
+        int retVal=0;
+        try {
+            retVal = statement.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            throw prepareInfoAboutError(e, ErrorCodes.DELETE_SUPPLIER_ERROR);
+        }
+        finally {
+            statement.close();
+            manager.releaseConnection(conn);
+        }
+        return retVal;
+
+    }
 
     private SQLExceptionExt prepareInfoAboutError(SQLException e, int errorCode)
     {

@@ -12,7 +12,7 @@ public class AddressDAO {
         Connection conn = manager.getConnection();
         String sql = "insert into pzwpj_schema.addresses(street, buildingNumber, appartmentNumber, appartmentNumberAppendix, city, country, postalCode, region)" +
                 "values (?, ?, ?, ?, ?, ?, ?, ?);";
-        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        PreparedStatement preparedStatement = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
         int i=1;
         preparedStatement.setString(i++, newAddress.getStreet());
         preparedStatement.setInt(i++, newAddress.getBuildingNumber());
@@ -42,34 +42,20 @@ public class AddressDAO {
         {
             preparedStatement.setNull(i++, Types.NULL);
         }
-        /*
-        preparedStatement.setString("street", newAddress.getStreet());
-        preparedStatement.setInt("buildingNumber", newAddress.getBuildingNumber());
-        preparedStatement.setInt("appartmentNumber", newAddress.getAppartmentNumber());
-        if(!newAddress.getAppartmentNumberAppendix().equals(""))
-        {
-            preparedStatement.setString("appartmentNumberAppendix", newAddress.getAppartmentNumberAppendix());
-        }else
-        {
-            preparedStatement.setNULL("appartmentNumberAppendix");
-        }
-        preparedStatement.setString("city", newAddress.getCity());
-        preparedStatement.setString("postalCode", newAddress.getPostalCode());
-        if(!newAddress.getRegion().equals(""))
-        { preparedStatement.setString("region", newAddress.getRegion()); }
-        else
-        {
-            preparedStatement.setNULL("region");
-        }
 
-         */
         int updatedRowsNumber= 0;
         try {
             updatedRowsNumber = preparedStatement.executeUpdate();
+
+            ResultSet rs =preparedStatement.getGeneratedKeys();
+            if(rs.next())
+            {
+                int newId = rs.getInt(1);
+                newAddress.setId(newId);
+            }
         }catch (SQLException e)
         {
-            System.out.println("Error while inserting address to db");
-            throw e;
+            throw prepareInfoAboutError(e, ErrorCodes.INSERT_ADDRESS_ERROR);
         }
         finally {
             preparedStatement.close();
@@ -80,7 +66,6 @@ public class AddressDAO {
     }
 
     private Address readSingleAddressFromResultSet(ResultSet rs) throws SQLException {
-        int i=1;
         int id = rs.getInt("addressId");
         String street = rs.getString("street");
         int buildingNumber = rs.getInt("buildingNumber");
@@ -136,9 +121,7 @@ public class AddressDAO {
         {
 
 
-            System.out.println("Failed while reading from db");
-            e.printStackTrace();
-            throw e;
+            throw prepareInfoAboutError(e, ErrorCodes.SELECT_ALL_ADDRESS_ERROR);
         }
         finally {
             preparedStatement.close();
@@ -164,9 +147,8 @@ public class AddressDAO {
         }
         catch (SQLException e)
         {
-            System.out.println("Error while reading single address from db");
-            e.printStackTrace();
-            throw e;
+            throw prepareInfoAboutError(e, ErrorCodes.SELECT_SINGLE_ADDRESS_ERROR);
+
         }
         finally {
             preparedStatement.close();
@@ -186,7 +168,7 @@ public class AddressDAO {
         preparedStatement.setInt(i++, addressToUpdate.getBuildingNumber());
         if(!addressToUpdate.noAppartmentNumber())
         {
-            preparedStatement.setInt(i++, addressToUpdate.getBuildingNumber());
+            preparedStatement.setInt(i++, addressToUpdate.getAppartmentNumber());
         }
         else
         {
@@ -205,7 +187,7 @@ public class AddressDAO {
         preparedStatement.setString(i++, addressToUpdate.getPostalCode());
         if(!addressToUpdate.noRegion())
         {
-            preparedStatement.setString(i++, addressToUpdate.getCountry());
+            preparedStatement.setString(i++, addressToUpdate.getRegion());
         }
         else
         {
@@ -273,7 +255,7 @@ public class AddressDAO {
         String city = rs.getString(adrItr++);
         String country = rs.getString(adrItr++);
         String postalCode = rs.getString(adrItr++);
-        String region = rs.getString(addressId++);
+        String region = rs.getString(adrItr++);
         if(rs.wasNull())
         {
             region = Address.getNoRegion();

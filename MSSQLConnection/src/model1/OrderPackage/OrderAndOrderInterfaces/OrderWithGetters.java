@@ -23,5 +23,7 @@ public interface OrderWithGetters extends ListGetters {
     public Address getDeliveryAddress() ;
     public int size();
 
+
+
 }
 

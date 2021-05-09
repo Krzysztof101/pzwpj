@@ -15,6 +15,7 @@ public class ConnectionPoolManager implements AutoCloseable, ConnectionPool {
     {
 
     }
+    private static final int DEFAULT_NUMBER_OF_CONNECTIONS=30;
     public static ConnectionPoolManager getInstance() throws SQLException {
         if(manager != null)
         {
@@ -27,7 +28,7 @@ public class ConnectionPoolManager implements AutoCloseable, ConnectionPool {
             String url2 = "jdbc:sqlserver://localhost;databaseName=pzwpj_baza;";
             String login = "pzwpj_login";
             String password = "pzwpj_haslo";
-            connectionPool = BasicConnectionPool.create(url2, login, password,1);
+            connectionPool = BasicConnectionPool.create(url2, login, password,DEFAULT_NUMBER_OF_CONNECTIONS);
             manager = new ConnectionPoolManager();
             return manager;
         }

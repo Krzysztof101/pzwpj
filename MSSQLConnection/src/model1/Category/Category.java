@@ -35,4 +35,10 @@ public class Category implements Cloneable {
     public String getDescription() {return description; }
     public void setCategoryName(String categoryName){this.categoryName = categoryName;}
     public void setDescription(String description) {this.description = description;}
+    public void setId(int newId) { this.id = newId; }
+
+    public String toString()
+    {
+        return "Category: id: "+Integer.toString(id) + ", name: "+categoryName +", description: "+description;
+    }
 }

@@ -1,11 +1,22 @@
 import ConnectionManagement.ConnectionPool.BasicConnectionPool;
 import ConnectionManagement.ConnectionPool.ConnectionPool;
 import ConnectionManagement.ConnectionPool.ConnectionPoolWithClosing;
-import ConnectionManagement.ConnectionPoolManager.ConnectionPoolManager;
 import model1.Address.AddressDAO;
 import model1.Address.Address;
+import model1.Category.Category;
+import model1.Category.CategoryDAO;
+import model1.Customer.Customer;
+import model1.Customer.CustomerDAO;
+import model1.OrderPackage.OrderAndOrderInterfaces.Order;
+import model1.OrderPackage.OrderAndOrderInterfaces.OrderWithGetters;
+import model1.OrderPackage.OrderDAO;
+import model1.Product.Product;
+import model1.Product.ProductDAO;
+
 import java.sql.*;
 import java.util.LinkedList;
+
+import static ConnectionManagement.ConnectionPoolManager.ConnectionPoolManager.getInstance;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
@@ -132,7 +143,7 @@ public class Main {
         System.out.println("close all connections - connection pool");
 
         System.out.println("Test Connection Manager");
-        ConnectionPool manager = ConnectionPoolManager.getInstance();
+        ConnectionPool manager = getInstance();
         //var conn2 = manager.getConnection();
         var newAddressDAO = new AddressDAO();
         Address address = new Address(0);
@@ -177,7 +188,96 @@ public class Main {
             //manager.releaseConnection(conn2);
         }
         */
+        System.out.println("Test addresses");
+        Address address1 = new Address(0);
+        address1.setPostalCode("00-001");
+        address1.setStreet("pomidorowa");
+        address1.setBuildingNumber(220);
+        address1.setAppartmentNumber(24);
+        address1.setCity("Chorzów");
+        address1.setRegion("śląskie");
+        address1.setCountry("Poland");
+        AddressDAO addressDAO = new AddressDAO();
+        addressDAO.create(address1);
+        Address address2 = addressDAO.getAddressById(address1.getId());
+        System.out.println("Test select: ");
+        System.out.println("addr1: "+ address1);
+        System.out.println("addr2: "+ address2);
+        System.out.println("End test select");
+        System.out.println("Test update");
+        address1.setCity("Katowice");
+        System.out.println("Before: "+address1);
+        addressDAO.update(address1);
+        System.out.println("After: ");
+        Address address3 = addressDAO.getAddressById(address1.getId());
+        System.out.println(address3);
+        System.out.println("End test select");
+        System.out.println("test delete");
+        addressDAO.delete(address3);
+        System.out.println("end test delete");
+        System.out.println("EndTest");
 
+        System.out.println("Test customer creation, single select and delete: ");
+        CustomerDAO customerDAO = new CustomerDAO();
+        Customer customer = customerDAO.getCustomerById(1);
+        System.out.println(customer);
+        Customer customer1 = new Customer(0,"AMD", customer.getAddress());
+        customerDAO.create(customer1);
+        Customer testSelect = customerDAO.getCustomerById(customer1.getId());
+        System.out.println("compare created and selected: ");
+        System.out.println(testSelect);
+        System.out.println(customer1);
+        System.out.println("end compare");
+        customerDAO.delete(customer1);
+        System.out.println("test done");
 
+        System.out.println("Test category creation, single select and delete: ");
+        CategoryDAO categoryDAO = new CategoryDAO();
+        Category category = new Category(0,"sprzęt trenigowy", "");
+        categoryDAO.create(category);
+        category.setCategoryName("sprzęt do treningu");
+        categoryDAO.update(category);
+        Category category1 = categoryDAO.getCategoryById(category.getId());
+        categoryDAO.delete(category1);
+        System.out.println("compare created and selected: ");
+        System.out.println(category1);
+        System.out.println(category);
+        System.out.println("End compare");
+        System.out.println("end of test");
+
+        System.out.println("Test product");
+        Category category2 = categoryDAO.getCategoryById(1);
+        Product product = new Product(0,category2,"playstation","sztuka", 345 );
+        ProductDAO productDAO = new ProductDAO();
+        System.out.println("Test create");
+        productDAO.create(product);
+        System.out.println("created, test select");
+        Product product1 = productDAO.getProductById(product.getId());
+        System.out.println("Before: "+product);
+        System.out.println("After: "+ product1);
+        System.out.println("End test product");
+
+        OrderDAO orderDAO = new OrderDAO();
+        OrderWithGetters order = orderDAO.getOrderWithGetters(6);
+        Order ord = (Order) order;
+        if(order==null)
+        {
+            System.out.println("Order is null");
+        }
+        System.out.println("Order created: \n" + ord);
+        System.out.println("end of order.toString()");
+        Runtime.getRuntime().addShutdownHook( new Thread(new Runnable(){
+
+            @Override
+            public void run() {
+
+                try {
+                    getInstance().close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }));
     }
 }

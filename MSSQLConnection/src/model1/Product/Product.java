@@ -13,6 +13,10 @@ public class Product implements Cloneable {
     public  String getProductName() { return productName; }
     public String getUnit() { return unit;}
     public int getQuantity() { return quantity; }
+    public void setId(int id) { this.id = id;}
+    public void setProductName(String name) {productName = name; }
+    public void setUnit( String unit) { this.unit = unit;}
+    public void setQuantity( int quantity ) {this.quantity = quantity;}
     public Product(int id, Category category, String name, String unit, int quantity )  {
         this.id = id;
         this.category = (Category) category.clone();
@@ -40,5 +44,9 @@ public class Product implements Cloneable {
             return false;
 
         return id == ((Product)o).id;
+    }
+    public String toString()
+    {
+        return "Product: name: "+productName+", "+ category+ ", unit: "+unit+", quantity: "+Integer.toString(quantity);
     }
 }

@@ -17,12 +17,26 @@ public class CustomerDAO {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
         String sql = "insert into pzwpj_schema.customers (companyName, addressId) values(?,?);";
-        PreparedStatement statement = conn.prepareStatement(sql);
+        PreparedStatement statement = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
         statement.setString(1,newCustomer.getCompanyName());
         statement.setInt(2,newCustomer.getAddress().getId());
         int retval=0;
         try {
+
+
             retval = statement.executeUpdate();
+
+            //if(retval > 0)
+            //{
+                ResultSet rs = statement.getGeneratedKeys();
+
+                if(rs.next())
+                {
+                    int newId = rs.getInt(1);
+                    newCustomer.setId(newId);
+                }
+
+            //}
         }
         catch (SQLException e)
         {
@@ -38,7 +52,7 @@ public class CustomerDAO {
     public Customer getCustomerById(int id) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
-        String sql = "select* from pzwpj_schema.customers join pzwpj_schema.addresses on pzwpj_schema.customers.addressId = pzwpj_schema.addresses.addressId where customerId=?;";
+        String sql = "select * from pzwpj_schema.customers join pzwpj_schema.addresses on pzwpj_schema.customers.addressId = pzwpj_schema.addresses.addressId where customerId=?;";
         Customer customer = null;
 
         PreparedStatement statement = conn.prepareStatement(sql);
@@ -47,7 +61,8 @@ public class CustomerDAO {
             ResultSet rs = statement.executeQuery();
             if(rs.next())
             {
-                int cstId = rs.findColumn("customerId");
+
+                int cstId = rs.getInt("customerId");
                 String cstName = rs.getString("companyName");
                 Address address = AddressDAO.buildUsingResultSet(rs,4);
                 customer = new Customer(cstId,cstName,address);
@@ -72,7 +87,7 @@ public class CustomerDAO {
             ResultSet rs = statement.executeQuery();
             while(rs.next())
             {
-                int cstId = rs.findColumn("customerId");
+                int cstId = rs.getInt("customerId");
                 String cstName = rs.getString("companyName");
                 Address address = AddressDAO.buildUsingResultSet(rs,4);
                 Customer customer = new Customer(cstId,cstName,address);
@@ -88,15 +103,41 @@ public class CustomerDAO {
         }
         return customers;
     }
+    public int update(Customer customerToUpdate) throws SQLException {
+        ConnectionPool manager = ConnectionPoolManager.getInstance();
+        Connection conn = manager.getConnection();
+        String sql = "update pzwpj_schema.customers set companyName=?, addressId=? where customerId=?;";
+        PreparedStatement statement = conn.prepareStatement(sql);
+        statement.setString(1, customerToUpdate.getCompanyName());
+        statement.setInt(2, customerToUpdate.getAddress().getId());
+        statement.setInt(3, customerToUpdate.getId());
+        int retVal=0;
+        try {
+            retVal = statement.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            throw prepareInfoAboutError(e,ErrorCodes.UPDATE_CUSTOMER_ERROR);
+
+        }
+        finally {
+            statement.close();
+            manager.releaseConnection(conn);
+        }
+        return retVal;
+    }
+
+
 
     public int delete(Customer customerToDelete) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
         String sql = "delete from pzwpj_schema.customers where customerId=?;";
         PreparedStatement statement = conn.prepareStatement(sql);
+        statement.setInt(1, customerToDelete.getId());
         int retVal =0;
         try {
-            retVal = statement.executeUpdate();
+            int rowsCreated = statement.executeUpdate();
         }
         catch (SQLException e)
         {

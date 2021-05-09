@@ -16,6 +16,9 @@ public class Customer implements Cloneable {
     public int getId(){return id;}
     public String getCompanyName(){ return  companyName;}
     public Address getAddress()  {return (Address) address.clone();}
+    public  void setId(int id) { this.id = id; }
+    public void  setCompanyName(String companyName) { this.companyName = companyName; }
+    public void  setAddress(Address address) { this.address = (Address) address.clone() ; }
     @Override
     public Object clone()  {
         try {
@@ -25,5 +28,12 @@ public class Customer implements Cloneable {
             return null;
         }
         //return new Customer(id,companyName, address);
+    }
+
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Customer: id: ").append(id).append(", companyName: ").append(companyName).append(", address").append(address);
+        return builder.toString();
     }
 }

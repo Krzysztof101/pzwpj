@@ -28,7 +28,12 @@ public class Address implements Cloneable{
     public void setCountry(String country) {this.country = country;}
     public String getRegion() {return  region;}
     public void  setRegion(String region){this.region = region;}
-    public Address(int id) {this.id = id; appartmentNumber=-1; }
+    public Address(int id) {
+        this.id = id;
+        appartmentNumber=Address.getNoAppartmentNumber();
+        appartmentNumberAppendix=Address.getNoAppartmentNumberAppendix();
+        region = Address.getNoRegion();
+    }
     public boolean noAppartmentNumber() { return  appartmentNumber == NO_APPARTMENT;}
     public boolean noAppartmentNumberAppendix() { return appartmentNumberAppendix.equals(NO_APPARTMENT_APPENDIX);}
     public boolean noRegion() { return region.equals(NO_REGION);}
@@ -74,6 +79,10 @@ public class Address implements Cloneable{
         }
         builder.append(appartmentNumberAppendix).append(", ").append(postalCode).append(" ").append(city).append(", region: ").append(region).append(" ").append(country);
         return builder.toString();
+    }
+
+    public void setId(int newId) {
+        this.id = newId;
     }
 
 }

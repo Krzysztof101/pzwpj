@@ -72,7 +72,7 @@ public class OrderBuilder implements  IOrderBuilder{
     {
         var retVal = orderToBuild;
         orderToBuild = null;
-        return orderToBuild;
+        return retVal;
     }
     @Override
     public OrderWithGetters returnOrderWithGetters() {

@@ -17,7 +17,7 @@ public class ProductDAO {
     public LinkedList<Product> getAllProducts() throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
-        String sql = "select * from pzwpj_schema.products join pzwpj_schema.categories on pzwpj_schema.products.categoryId = pzwpj_schema.categories.categoryId";
+        String sql = "select * from pzwpj_schema.products join pzwpj_schema.categories on pzwpj_schema.products.categoryId = pzwpj_schema.categories.categoryId;";
         PreparedStatement statement = conn.prepareStatement(sql);
         LinkedList<Product> products = new LinkedList<>();
         try {
@@ -79,7 +79,7 @@ public class ProductDAO {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
         String sql = "insert into pzwpj_schema.products (productName, categoryId, unit, quantity) values (?,?, ?, ?);";
-        PreparedStatement statement = conn.prepareStatement(sql);
+        PreparedStatement statement = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
         int i=1;
         statement.setString(i++,newProduct.getProductName());
         statement.setInt(i++, newProduct.getCategory().getId());
@@ -88,6 +88,12 @@ public class ProductDAO {
         int retVal=0;
         try {
             retVal = statement.executeUpdate();
+            ResultSet rs = statement.getGeneratedKeys();
+            if(rs.next())
+            {
+                int newId = rs.getInt(1);
+                newProduct.setId(newId);
+            }
         }
         catch (SQLException e)
         {
@@ -106,6 +112,7 @@ public class ProductDAO {
         Connection conn = manager.getConnection();
         String sql = "delete from pzwpj_schema.products where productId =?;";
         PreparedStatement statement = conn.prepareStatement(sql);
+        statement.setInt(1,toDelete.getId());
         int retVal = 0;
         try {
             retVal = statement.executeUpdate();
@@ -116,6 +123,29 @@ public class ProductDAO {
         }
         finally {
             statement.close();
+            manager.releaseConnection(conn);
+        }
+        return retVal;
+    }
+
+    public int update(Product productToUpdate) throws SQLException {
+        ConnectionPool manager = ConnectionPoolManager.getInstance();
+        Connection conn = manager.getConnection();
+        String prevSchema = conn.getSchema();
+        conn.setSchema("pzwpj_schema");
+        String sql="update products set productName = ?, categoryId =?, unit = ?, quantity = ? where productId = ?;";
+        PreparedStatement statement = conn.prepareStatement(sql);
+        int retVal = 0;
+        try {
+            retVal = statement.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            throw prepareInfoAboutError(e, ErrorCodes.UPDATE_PRODUCT_ERROR);
+        }
+        finally {
+            statement.close();
+            conn.setSchema(prevSchema);
             manager.releaseConnection(conn);
         }
         return retVal;

@@ -21,6 +21,21 @@ public class Order implements  OrderWithAllMethods{
     private Address deliveryAddress;
     private LinkedList<Product> products;
     private LinkedList<Integer> quantities;
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Order: id: ").append(id).append(", freight: ").append(freight).append(", description: ").append(description);
+        builder.append("\ndelicery address: ").append(deliveryAddress).append("\nbuyer: ").append(buyer);
+        builder.append("\n order date: ").append(orderDate).append("\nshipping date: ").append(shipDate).append("\nrequire date: ").append(requireDate).append("\n");
+        for(int i=0; i<products.size(); i++)
+        {
+            builder.append(products.get(i)).append(", ordered: ").append(quantities.get(i)).append("\n");
+        }
+        return builder.toString();
+
+    }
+
+
 
     private final static String NO_DESCRIPTION="";
 

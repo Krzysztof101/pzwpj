@@ -12,6 +12,8 @@ public class Supplier implements Cloneable{
         this.address = (Address) address.clone();
     }
     public void setAddress(Address address){ this.address = (Address) address.clone();}
+    public void setId(int id) { this.id = id;}
+    public void setName(String name){this.name = name;}
     public int getId()
     {
         return id;

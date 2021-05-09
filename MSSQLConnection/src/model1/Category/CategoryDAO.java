@@ -25,7 +25,7 @@ public class CategoryDAO {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
         String sql = "insert into pzwpj_schema.categories(categoryName, description) values(?, ?);";
-        PreparedStatement statement = conn.prepareStatement(sql);
+        PreparedStatement statement = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
         statement.setString(1,newCategory.getCategoryName());
         if(!newCategory.noDescription())
         {
@@ -39,6 +39,15 @@ public class CategoryDAO {
         try
         {
             retVal = statement.executeUpdate();
+            if(retVal>0)
+            {
+                ResultSet rs = statement.getGeneratedKeys();
+                if(rs.next())
+                {
+                    int newId = rs.getInt(1);
+                    newCategory.setId(newId);
+                }
+            }
         }
         catch(SQLException e)
         {
@@ -53,7 +62,7 @@ public class CategoryDAO {
     public int update(Category categoryToUpdate) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
-        String sql = "update pzwpj_schema.categories set categoryName=?, decription=? where categoryId = ?;";
+        String sql = "update pzwpj_schema.categories set categoryName=?, description=? where categoryId = ?;";
         PreparedStatement statement = conn.prepareStatement(sql);
         statement.setString(1, categoryToUpdate.getCategoryName());
         if(!categoryToUpdate.noDescription())
@@ -143,7 +152,8 @@ public class CategoryDAO {
         }
         return retVal;
     }
-    public int delete(int id) throws SQLException {
+    public int delete(Category categoryToDelete) throws SQLException {
+        int id = categoryToDelete.getId();
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
         String sql = "DELETE from pzwpj_schema.categories where categoryId = ?";

@@ -2,6 +2,13 @@ package model1.SQLErrorClasses;
 
 public class ErrorCodes {
     public final static String SEPARATOR="*";
+    public final static int DELETE_SUPPLIER_ERROR=994;
+    public final static int SELECT_SINGLE_SUPPLIER_ERROR=995;
+    public final static int UPDATE_PRODUCT_ERROR=996;
+    public final static int UPDATE_CUSTOMER_ERROR=997;
+    public final static int SELECT_SINGLE_ADDRESS_ERROR=998;
+    public final static int SELECT_ALL_ADDRESS_ERROR=999;
+    public final static int INSERT_ADDRESS_ERROR = 1000;
     public final static int UPDATE_ADDRESS_ERROR = 1001;
     public final static int DELETE_ADDRESS_ERROR = 1002;
     public final static int INSERT_CATEGORY_ERROR = 1003;
@@ -23,13 +30,30 @@ public class ErrorCodes {
     public final static int INSERT_ORDER_ERROR=1021;
     public final static int DELETE_ORDER_ERROR=1022;
     public final static int SELECT_SINGLE_ORDER_ERROR=1023;
+    public static final int UPDATE_ORDER_ERROR = 1024;
     //TODO ADD UPDATE PRODUCT I UPDATE CUSTOMER
 
     public static String getMessage(int errorCode)
     {
         switch (errorCode)
         {
+            case UPDATE_ORDER_ERROR:
+                return "UPDATE_ORDER_ERROR"+SEPARATOR;
+            case DELETE_SUPPLIER_ERROR:
+                return "DELETE_SUPPLIER_ERROR"+SEPARATOR;
+            case SELECT_SINGLE_SUPPLIER_ERROR:
+                return "SELECT_SINGLE_SUPPLIER_ERROR"+SEPARATOR;
+            case UPDATE_PRODUCT_ERROR:
+                return "UPDATE_PRODUCT_ERROR"+SEPARATOR;
+            case UPDATE_CUSTOMER_ERROR:
+                return "UPDATE_CUSTOMER_ERROR"+SEPARATOR;
+            case SELECT_SINGLE_ADDRESS_ERROR:
+                return "SELECT_SINGLE_ADDRESS_ERROR"+SEPARATOR;
+            case SELECT_ALL_ADDRESS_ERROR:
+                return "SELECT_ALL_ADDRESS_ERROR"+SEPARATOR;
 
+            case INSERT_ADDRESS_ERROR:
+                return "INSERT_ADDRESS_ERROR"+SEPARATOR;
 
             case UPDATE_ADDRESS_ERROR:
             {

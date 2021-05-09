@@ -6,16 +6,17 @@ import model1.SQLErrorClasses.ErrorCodes;
 import java.sql.*;
 import java.util.LinkedList;
 
-public class AddressDAO {
+public class AddressDAO implements IAddressDAO{
+    @Override
     public int create(Address newAddress) throws SQLException {
         ConnectionPoolManager manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
-        String sql = "insert into pzwpj_schema.addresses(street, buildingNumber, appartmentNumber, appartmentNumberAppendix, city, country, postalCode, region)" +
-                "values (?, ?, ?, ?, ?, ?, ?, ?);";
+        String sql = prepareSql(newAddress);
         PreparedStatement preparedStatement = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
         int i=1;
         preparedStatement.setString(i++, newAddress.getStreet());
         preparedStatement.setInt(i++, newAddress.getBuildingNumber());
+
         if(!newAddress.noAppartmentNumber())
         {
             preparedStatement.setInt(i++, newAddress.getAppartmentNumber());
@@ -32,8 +33,11 @@ public class AddressDAO {
         {
             preparedStatement.setNull(i++,Types.NULL);
         }
+        ////street, buildingNumber, appartmentNumber, appartmentNumberAppendix, city, country, postalCode, region)
         preparedStatement.setString(i++, newAddress.getCity());
-        preparedStatement.setString(i++, newAddress.getCountry());
+        if(!newAddress.getCountryDefault()) {
+            preparedStatement.setString(i++, newAddress.getCountry());
+        }
         preparedStatement.setString(i++, newAddress.getPostalCode());
 
         if(!newAddress.getRegion().equals(""))
@@ -64,6 +68,18 @@ public class AddressDAO {
 
         return updatedRowsNumber;
     }
+    private String prepareSql(Address insertedAddress)
+    {
+        if(insertedAddress.getCountryDefault())
+        {
+            return  "insert into pzwpj_schema.addresses(street, buildingNumber, appartmentNumber, appartmentNumberAppendix, city, postalCode, region)" +
+                    "values (?, ?, ?, ?, ?, ?, ?);";
+        }
+
+        return  "insert into pzwpj_schema.addresses(street, buildingNumber, appartmentNumber, appartmentNumberAppendix, city, country, postalCode, region)" +
+                "values (?, ?, ?, ?, ?, ?, ?, ?);";
+    }
+
 
     private Address readSingleAddressFromResultSet(ResultSet rs) throws SQLException {
         int id = rs.getInt("addressId");
@@ -99,6 +115,7 @@ public class AddressDAO {
         fetchedAddress.setRegion(region);
         return fetchedAddress;
     }
+    @Override
     public LinkedList<Address> getAllAddresses() throws SQLException {
         ConnectionPoolManager manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -130,7 +147,7 @@ public class AddressDAO {
         return addresses;
     }
 
-
+    @Override
     public Address getAddressById(int id) throws SQLException {
         ConnectionPoolManager manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -156,7 +173,7 @@ public class AddressDAO {
         }
         return fetchedAddress;
     }
-
+    @Override
     public int update(Address addressToUpdate) throws SQLException {
         ConnectionPoolManager manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -208,7 +225,7 @@ public class AddressDAO {
         }
         return retVal;
     }
-
+    @Override
     public int delete(Address addressToDelete) throws SQLException {
         ConnectionPoolManager manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();

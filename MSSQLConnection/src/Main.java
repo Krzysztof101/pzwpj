@@ -8,10 +8,13 @@ import model1.Category.CategoryDAO;
 import model1.Customer.Customer;
 import model1.Customer.CustomerDAO;
 import model1.OrderPackage.OrderAndOrderInterfaces.Order;
+import model1.OrderPackage.OrderAndOrderInterfaces.OrderWithAllMethods;
 import model1.OrderPackage.OrderAndOrderInterfaces.OrderWithGetters;
 import model1.OrderPackage.OrderDAO;
 import model1.Product.Product;
 import model1.Product.ProductDAO;
+import model1.Supplier.Supplier;
+import model1.Supplier.SupplierDAO;
 
 import java.sql.*;
 import java.util.LinkedList;
@@ -250,7 +253,7 @@ public class Main {
         Product product = new Product(0,category2,"playstation","sztuka", 345 );
         ProductDAO productDAO = new ProductDAO();
         System.out.println("Test create");
-        productDAO.create(product);
+        //productDAO.create(product);
         System.out.println("created, test select");
         Product product1 = productDAO.getProductById(product.getId());
         System.out.println("Before: "+product);
@@ -258,14 +261,67 @@ public class Main {
         System.out.println("End test product");
 
         OrderDAO orderDAO = new OrderDAO();
-        OrderWithGetters order = orderDAO.getOrderWithGetters(6);
+        OrderWithAllMethods order = orderDAO.getOrderWithAllMethods(9);
         Order ord = (Order) order;
-        if(order==null)
-        {
+        if(order==null) {
             System.out.println("Order is null");
         }
+
         System.out.println("Order created: \n" + ord);
+        /*
+        System.out.println("test order update");
+        Product prod = productDAO.getProductById(9);
+        order.addProduct(prod, 5);
+        System.out.println("BeforeOrderUpdate");
+        orderDAO.update(order);
+        System.out.println("AfterOrderUpdate");
+         */
         System.out.println("end of order.toString()");
+
+        System.out.println("test address - create address with not default country");
+        //insert into pzwpj_schema.addresses (street,buildingNumber,appartmentNumberAppendix,city,country,postalCode) values ('lange',42,'a','Berlin','Germany','17-453');
+        Address addressGermany = new Address();
+        addressGermany.setStreet("lange");
+        addressGermany.setBuildingNumber(72);
+        addressGermany.setAppartmentNumberAppendix("b");
+        addressGermany.setCity("Berlin");
+        addressGermany.setCountry("Germany");
+        addressGermany.setPostalCode("17-777");
+        addressGermany.setRegion("Berlin");
+        System.out.println("before insert "+addressGermany);
+        System.out.println("insert");
+        addressDAO.create(addressGermany);
+        System.out.println("After insert");
+        System.out.println(addressGermany);
+
+        System.out.println("Test supplier dao");
+        SupplierDAO supplierDAO = new SupplierDAO();
+        Supplier supplier = new Supplier("Mleczarnia", addressDAO.getAddressById(2));
+        System.out.println("newly created supplier: "+ supplier);
+        supplierDAO.create(supplier);
+        System.out.println("After: "+supplier);
+        System.out.println("select:");
+        Supplier supplier1 = supplierDAO.getSupplierById(supplier.getId());
+        System.out.println("supplier from select: "+supplier1);
+        supplier1.setName("Sad Jana Kowalskiego");
+        supplierDAO.update(supplier1);
+        System.out.println("End test supplier dao");
+
+
+        System.out.println("Test select all");
+        LinkedList<Address> allAddresses = addressDAO.getAllAddresses();
+        printAll(allAddresses);
+        LinkedList<Category> allCategories = categoryDAO.getAllCategories();
+        printAll(allCategories);
+        LinkedList<Customer> allCustomers = customerDAO.getAllCustomers();
+        printAll(allCustomers);
+        LinkedList<Product> allProducts = productDAO.getAllProducts();
+        printAll(allProducts);
+        LinkedList<Supplier> allSuppliers = supplierDAO.getAllSuppliers();
+        printAll(allSuppliers);
+
+
+
         Runtime.getRuntime().addShutdownHook( new Thread(new Runnable(){
 
             @Override
@@ -279,5 +335,13 @@ public class Main {
 
             }
         }));
+    }
+
+    public static void printAll(Iterable collection)
+    {
+        for (var o: collection
+             ) {
+            System.out.println(o);
+        }
     }
 }

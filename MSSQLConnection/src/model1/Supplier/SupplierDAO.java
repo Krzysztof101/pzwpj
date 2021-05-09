@@ -20,7 +20,7 @@ public class SupplierDAO {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
         String sql = "insert into pzwpj_schema.suppliers(companyName, addressId) values(?, ?);";
-        PreparedStatement statement = conn.prepareStatement(sql);
+        PreparedStatement statement = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
         statement.setString(1, newSupplier.getCompanyName());
         statement.setInt(2, newSupplier.getAddress().getId());
         int retVal = ROWS_AFFECTED;
@@ -100,7 +100,7 @@ public class SupplierDAO {
     public Supplier getSupplierById(int id) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
-        String sql = "Select * from pzwpj_schema.suppliers join pzwpj_schema.addresses on pzwpj_schema.addresses.addressId = pzwpj_schema.suppliers.addressID where pzwpj_schema.supplierId=?;";
+        String sql = "Select * from pzwpj_schema.suppliers join pzwpj_schema.addresses on pzwpj_schema.addresses.addressId = pzwpj_schema.suppliers.addressID where pzwpj_schema.suppliers.supplierId=?;";
         PreparedStatement statement = conn.prepareStatement(sql);
         statement.setInt(1, id);
         Supplier supplier = null;

@@ -10,6 +10,26 @@ public class Address implements Cloneable{
     private String country;
     private String postalCode;
     private String region;
+    private final static int NO_RECORD_IN_DATABASE_ID=0;
+    private final static String DEFAULT_COUNTRY="Poland";
+    private boolean countryDefault;
+    public static int getNoRecordInDatabaseId(){return NO_RECORD_IN_DATABASE_ID;}
+
+    public Address() {
+        this.id = NO_RECORD_IN_DATABASE_ID;
+        appartmentNumber=Address.getNoAppartmentNumber();
+        appartmentNumberAppendix=Address.getNoAppartmentNumberAppendix();
+        region = Address.getNoRegion();
+        countryDefault = true;
+        country = DEFAULT_COUNTRY;
+    }
+    public Address(int id) {
+        this.id = id;
+        appartmentNumber=Address.getNoAppartmentNumber();
+        appartmentNumberAppendix=Address.getNoAppartmentNumberAppendix();
+        region = Address.getNoRegion();
+        countryDefault = true;
+    }
 
     public String getStreet(){return street;}
     public int getId() { return id;}
@@ -21,19 +41,25 @@ public class Address implements Cloneable{
     public String getAppartmentNumberAppendix() { return  appartmentNumberAppendix;}
     public void setAppartmentNumberAppendix(String appendix) {appartmentNumberAppendix =appendix; }
     public String getCity() {return  city;}
-    public void setCity(String city) { this.city = city;}
+    public void setCity(String city) { this.city = city; countryDefault = false;}
     public String getPostalCode() {return  postalCode;}
     public void setPostalCode(String code) { postalCode = code; }
     public String getCountry(){return country;}
-    public void setCountry(String country) {this.country = country;}
+    public void setCountry(String country) {
+        if(!country.equals("")) {
+        this.country = country;
+        setCountryDefault(false);
+        return;
+        }
+        this.country = DEFAULT_COUNTRY;
+        setCountryDefault(true);
+    }
+    public boolean getCountryDefault() { return countryDefault;}
+    public void setCountryDefault(boolean defaultCountry) { countryDefault = defaultCountry; }
     public String getRegion() {return  region;}
     public void  setRegion(String region){this.region = region;}
-    public Address(int id) {
-        this.id = id;
-        appartmentNumber=Address.getNoAppartmentNumber();
-        appartmentNumberAppendix=Address.getNoAppartmentNumberAppendix();
-        region = Address.getNoRegion();
-    }
+
+
     public boolean noAppartmentNumber() { return  appartmentNumber == NO_APPARTMENT;}
     public boolean noAppartmentNumberAppendix() { return appartmentNumberAppendix.equals(NO_APPARTMENT_APPENDIX);}
     public boolean noRegion() { return region.equals(NO_REGION);}
@@ -77,7 +103,7 @@ public class Address implements Cloneable{
         {
             builder.append("/").append(appartmentNumber);
         }
-        builder.append(appartmentNumberAppendix).append(", ").append(postalCode).append(" ").append(city).append(", region: ").append(region).append(" ").append(country);
+        builder.append(appartmentNumberAppendix).append(", ").append(postalCode).append(" ").append(city).append(", region: ").append(region).append(" ").append(region);
         return builder.toString();
     }
 

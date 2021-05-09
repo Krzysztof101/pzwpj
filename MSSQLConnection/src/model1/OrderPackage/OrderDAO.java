@@ -7,6 +7,7 @@ import model1.Customer.Customer;
 import model1.Customer.CustomerDAO;
 import model1.OrderPackage.Builder.DateType;
 import model1.OrderPackage.Builder.OrderBuilder;
+import model1.OrderPackage.OrderAndOrderInterfaces.IOrderDAO;
 import model1.OrderPackage.OrderAndOrderInterfaces.Order;
 import model1.OrderPackage.OrderAndOrderInterfaces.OrderWithAllMethods;
 import model1.OrderPackage.OrderAndOrderInterfaces.OrderWithGetters;
@@ -19,7 +20,8 @@ import model1.Address.*;
 import java.math.BigDecimal;
 import java.sql.*;
 
-public class OrderDAO {
+public class OrderDAO implements IOrderDAO {
+    @Override
     public int create(OrderWithAllMethods order) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -83,7 +85,7 @@ public class OrderDAO {
         return retVal;
 
     }
-
+    @Override
     public int delete(Order orderToDelete) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -104,7 +106,7 @@ public class OrderDAO {
         }
         return retVal;
     }
-
+    @Override
     public OrderWithGetters getOrderWithGetters(int id) throws SQLException {
         /*
         OrderBuilder builder = Order.create();
@@ -188,6 +190,7 @@ public class OrderDAO {
         Connection conn = ConnectionPoolManager.getInstance().getConnection();
         return getOrderPriv(id );
     }
+    @Override
     public OrderWithAllMethods getOrderWithAllMethods(int id) throws SQLException
     {
         Connection conn = ConnectionPoolManager.getInstance().getConnection();
@@ -221,6 +224,7 @@ public class OrderDAO {
         String sql = "insert into pzwpj_schema.orders(customerId, orderDate, shipdate, requireDate, freight, description, addressId)" +
                 " values (?, ?, ?, ?, ?, ?, ?);";
         String sql2 = "insert into pzwpj_schema.orderDetails(orderId,productId,quantity) values(?,?,?);";
+        int prevOrderId= order.getId();
         var productsStatement  =conn.prepareStatement(sql2, PreparedStatement.RETURN_GENERATED_KEYS);
         int i=1;
         PreparedStatement statement = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
@@ -245,23 +249,22 @@ public class OrderDAO {
 
             if(retVal>0) {
                 ResultSet rs = statement.getGeneratedKeys();
-                if(rs.next())
+                if (rs.next())
                     newOrderId = rs.getInt(1);
+
+
+                productsStatement.setInt(1, newOrderId);
+                for (int ii = 0; ii < order.size(); ii++) {
+
+                    productsStatement.setInt(2, order.getProduct(ii).getId());
+                    productsStatement.setInt(3, order.getQuantityOfProductAtPosition(ii));
+                    retVal += productsStatement.executeUpdate();
+                }
             }
-
-
-            productsStatement.setInt(1,newOrderId);
-            for(int ii= 0 ; ii< order.size(); ii++)
-            {
-
-                productsStatement.setInt(2,order.getProduct(ii).getId());
-                productsStatement.setInt(3, order.getQuantityOfProductAtPosition(ii));
-                retVal+=productsStatement.executeUpdate();
-            }
-            conn.commit();
         }
         catch (SQLException e)
         {
+            order.setId(prevOrderId);
             //conn.rollback();
             throw prepareInfoAboutError(e, ErrorCodes.INSERT_ORDER_ERROR);
         }
@@ -275,8 +278,9 @@ public class OrderDAO {
         return retVal;
     }
 
-
-    public int update(Order orderToUpdate) throws SQLException {
+    @Override
+    public int update(OrderWithGetters orderToUpdate1) throws SQLException {
+        Order orderToUpdate = (Order) orderToUpdate1;
         Connection conn = ConnectionPoolManager.getInstance().getConnection();
         boolean prevAutoCommit = conn.getAutoCommit();
         int retVal=0;

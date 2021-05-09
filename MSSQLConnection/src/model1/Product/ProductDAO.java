@@ -13,7 +13,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 
-public class ProductDAO {
+public class ProductDAO implements  IProductDAO{
+    @Override
     public LinkedList<Product> getAllProducts() throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -44,7 +45,7 @@ public class ProductDAO {
         }
         return products;
     }
-
+    @Override
     public Product getProductById(int id) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -75,6 +76,7 @@ public class ProductDAO {
         }
         return product;
     }
+    @Override
     public int create(Product newProduct) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -106,7 +108,7 @@ public class ProductDAO {
         return retVal;
 
     }
-
+    @Override
     public int delete(Product toDelete) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -127,7 +129,7 @@ public class ProductDAO {
         }
         return retVal;
     }
-
+    @Override
     public int update(Product productToUpdate) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();

@@ -12,7 +12,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 
-public class CustomerDAO {
+public class CustomerDAO implements ICustomerDAO{
+    @Override
     public int create(Customer newCustomer) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -49,6 +50,7 @@ public class CustomerDAO {
         return retval;
 
     }
+    @Override
     public Customer getCustomerById(int id) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -77,6 +79,7 @@ public class CustomerDAO {
         }
         return customer;
     }
+    @Override
     public LinkedList<Customer> getAllCustomers() throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -103,6 +106,8 @@ public class CustomerDAO {
         }
         return customers;
     }
+
+    @Override
     public int update(Customer customerToUpdate) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -128,7 +133,7 @@ public class CustomerDAO {
     }
 
 
-
+    @Override
     public int delete(Customer customerToDelete) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();

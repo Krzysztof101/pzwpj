@@ -8,7 +8,8 @@ import model1.SQLErrorClasses.SQLExceptionExt;
 import java.sql.*;
 import java.util.LinkedList;
 
-public class CategoryDAO {
+public class CategoryDAO implements ICategoryDAO {
+
     public static Category constructFromResultSet(ResultSet rs, int i) throws SQLException {
         int id = rs.getInt(i++);
         String name = rs.getString(i++);
@@ -19,8 +20,8 @@ public class CategoryDAO {
         }
         return new Category(id, name, description);
     }
-
-    public int create(Category newCategory) throws SQLException, SQLExceptionExt {
+    @Override
+    public int create(Category newCategory) throws SQLException {
 
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -59,6 +60,7 @@ public class CategoryDAO {
         }
         return retVal;
     }
+    @Override
     public int update(Category categoryToUpdate) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -88,6 +90,7 @@ public class CategoryDAO {
         }
         return retVal;
     }
+    @Override
     public LinkedList<Category> getAllCategories() throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
@@ -119,7 +122,8 @@ public class CategoryDAO {
         }
         return categories;
     }
-    public Category getCategoryById(int id) throws SQLException, SQLExceptionExt {
+    @Override
+    public Category getCategoryById(int id) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
         String sql = "Select * from pzwpj_schema.categories where categoryId = ?";
@@ -152,6 +156,7 @@ public class CategoryDAO {
         }
         return retVal;
     }
+    @Override
     public int delete(Category categoryToDelete) throws SQLException {
         int id = categoryToDelete.getId();
         ConnectionPool manager = ConnectionPoolManager.getInstance();

@@ -9,7 +9,9 @@ public interface ConnectionPool {
     public String getUrl();
     String getUser();
     String getPassword();
-    public int getNumberOfFreeConnections();
+    int getNumberOfFreeConnections();
     int getSize();
-    public void resetConnection(Connection connection) throws SQLException;
+    void resetConnection(Connection connection) throws SQLException;
+    int getDesiredPoolSize();
+    void setDesiredPoolSize(int desiredSize) throws SQLException;
 }

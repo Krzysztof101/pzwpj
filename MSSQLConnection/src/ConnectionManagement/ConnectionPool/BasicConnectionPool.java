@@ -18,7 +18,7 @@ public class BasicConnectionPool
     private List<Connection> connectionPool;
     private List<Connection> usedConnections;
     private static int INITIAL_POOL_SIZE = 10;
-
+    private int desiredPoolSize;
     public static BasicConnectionPool create(
             String url, String user,
             String password) throws SQLException {
@@ -29,6 +29,7 @@ public class BasicConnectionPool
             String url, String user,
             String password, int poolSize) throws SQLException {
 
+
         List<Connection> pool = new LinkedList<>();
         for (int i = 0; i < poolSize; i++) {
             pool.add(createConnection(url, user, password));
@@ -38,6 +39,8 @@ public class BasicConnectionPool
 
     private BasicConnectionPool(String url, String user, String password, List<Connection> pool)
     {
+
+        this.desiredPoolSize = pool.size();
         this.url = url;
         this.user = user;
         this.password = password;
@@ -49,16 +52,21 @@ public class BasicConnectionPool
 
     @Override
     public Connection getConnection() throws SQLException {
-        Connection connection = connectionPool
-                .remove(connectionPool.size() - 1);
-        if(!connection.isClosed()) {
-            usedConnections.add(connection);
-            resetConnection(connection);
-            return connection;
+        if(connectionPool.size()!=0) {
+            Connection connection = connectionPool
+                    .remove(connectionPool.size() - 1);
+            if(!connection.isClosed()) {
+                usedConnections.add(connection);
+                resetConnection(connection);
+                return connection;
+            }
+            Connection newConnection = BasicConnectionPool.createConnection(url,user,password);
+            usedConnections.add(newConnection);
+            return newConnection;
         }
-        Connection newConnection = BasicConnectionPool.createConnection(url,user,password);
-        usedConnections.add(newConnection);
-        return newConnection;
+        Connection connection = BasicConnectionPool.createConnection(url,user,password);
+        usedConnections.add(connection);
+        return connection;
     }
     @Override
     public void resetConnection(Connection connection) throws SQLException {
@@ -66,9 +74,53 @@ public class BasicConnectionPool
         // AND write copying code here
     }
 
+    public int getDesiredPoolSize(){return desiredPoolSize;}
+    public void setDesiredPoolSize(int desiredSize) throws SQLException {
+        if(getSize() < desiredSize)
+        {
+            while (getSize()<desiredSize)
+            {
+                connectionPool.add( BasicConnectionPool.createConnection(url,user,password));
+            }
+            return;
+        }
+        if(getSize() > desiredSize)
+        {
+            while (getSize()> desiredSize && connectionPool.size()>0)
+            {
+                Connection c = connectionPool.remove(0);
+                if(!c.isClosed())
+                {
+                    c.close();
+                }
+            }
+
+        }
+    }
+
     @Override
     public boolean releaseConnection(Connection connection) throws SQLException {
+        if(connection == null || !usedConnections.contains(connection))
+        {
+            return false;
+        }
         var removeConnection = usedConnections.remove(connection);
+        usedConnections.remove(connection);
+        if(connection.isClosed())
+        {
+            connection = BasicConnectionPool.createConnection(url,user,password);
+        }
+        if(getSize()<desiredPoolSize)
+        {
+            connectionPool.add(connection);
+        }
+        else
+        {
+            if(!connection.isClosed())
+                connection.close();
+        }
+        return true;
+        /*
         if(removeConnection && !connection.isClosed())
         {
             connectionPool.add(connection);
@@ -78,6 +130,7 @@ public class BasicConnectionPool
             connectionPool.add(BasicConnectionPool.createConnection(url,user,password));
         }
         return removeConnection;
+        */
         //connectionPool.add(connection);
         //return usedConnections.remove(connection);
 

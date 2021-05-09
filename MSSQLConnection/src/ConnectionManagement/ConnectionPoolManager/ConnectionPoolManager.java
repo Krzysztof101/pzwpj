@@ -82,4 +82,14 @@ public class ConnectionPoolManager implements AutoCloseable, ConnectionPool {
         connectionPool.resetConnection(connection);
     }
 
+    @Override
+    public int getDesiredPoolSize() {
+        return connectionPool.getDesiredPoolSize();
+    }
+
+    @Override
+    public void setDesiredPoolSize(int desiredSize) throws SQLException {
+        connectionPool.setDesiredPoolSize(desiredSize);
+    }
+
 }

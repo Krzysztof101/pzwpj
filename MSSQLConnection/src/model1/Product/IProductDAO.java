@@ -9,4 +9,5 @@ public interface IProductDAO {
     Product getProductById(int id) throws SQLException;
     int delete(Product toDelete) throws SQLException;
     int update(Product productToUpdate) throws SQLException;
+    public LinkedList<Product> getCollectionOfProducts(LinkedList<Integer> listOfIds) throws SQLException;
 }

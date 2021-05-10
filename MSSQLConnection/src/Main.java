@@ -1,6 +1,10 @@
 import ConnectionManagement.ConnectionPool.BasicConnectionPool;
 import ConnectionManagement.ConnectionPool.ConnectionPool;
 import ConnectionManagement.ConnectionPool.ConnectionPoolWithClosing;
+import ConnectionManagement.Procedures.Functions;
+import ConnectionManagement.Procedures.IFunctions;
+import ConnectionManagement.Procedures.IProcedures;
+import ConnectionManagement.Procedures.Procedures;
 import model1.Address.AddressDAO;
 import model1.Address.Address;
 import model1.Category.Category;
@@ -17,6 +21,8 @@ import model1.Supplier.Supplier;
 import model1.Supplier.SupplierDAO;
 
 import java.sql.*;
+import java.time.Instant;
+import java.util.Calendar;
 import java.util.LinkedList;
 
 import static ConnectionManagement.ConnectionPoolManager.ConnectionPoolManager.getInstance;
@@ -320,7 +326,39 @@ public class Main {
         LinkedList<Supplier> allSuppliers = supplierDAO.getAllSuppliers();
         printAll(allSuppliers);
 
+        System.out.println("New features !!!");
 
+        IFunctions functions = new Functions();
+        LinkedList<Customer> customersInWarsaw = functions.getAllCustomersInCity("warszawa");
+        System.out.println("test function customers in city");
+        printAll(customersInWarsaw);
+        System.out.println("Test function monthly sales");
+        Category ccc = new Category(1,"assa","assdaad");
+        var dd =Calendar.getInstance().getTime();
+        Timestamp t = new Timestamp(dd.getTime());
+
+        var prod = productDAO.getProductById(23);
+        Date date = new Date(2021,5,5);
+        Timestamp ts=new Timestamp(date.getTime());
+        int sales = functions.getSalesOfProductInMonth(prod, t);
+        System.out.println("Sales: "+Integer.toString(sales));
+
+        IProcedures procedures = new Procedures();
+        Category firstCategory = allCategories.getFirst();
+        firstCategory.setCategoryName("updatedByProcedure");
+        System.out.println("Test stored procedure");
+        procedures.updateCategoryUsingProcedure(firstCategory);
+        System.out.println("Test ended");
+        LinkedList<Integer> ints = new LinkedList<>();
+        for(int i = 1; i<=10; i++)
+        {
+            ints.add(i);
+        }
+        System.out.println("get products by list test");
+        //LinkedList<Product> productsByArrayMethod = productDAO.getCollectionOfProducts(ints);
+
+        //printAll(productsByArrayMethod);
+        System.out.println("End test");
 
         Runtime.getRuntime().addShutdownHook( new Thread(new Runnable(){
 

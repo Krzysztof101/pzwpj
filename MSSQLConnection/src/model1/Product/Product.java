@@ -47,6 +47,6 @@ public class Product implements Cloneable {
     }
     public String toString()
     {
-        return "Product: name: "+productName+", "+ category+ ", unit: "+unit+", quantity: "+Integer.toString(quantity);
+        return "Product id: "+Integer.toString(id) + ", name: "+productName+", unit: "+unit+", quantity: "+Integer.toString(quantity)+", category: "+category ;
     }
 }

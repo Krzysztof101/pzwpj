@@ -7,10 +7,7 @@ import model1.Category.CategoryDAO;
 import model1.SQLErrorClasses.ErrorCodes;
 import model1.SQLErrorClasses.SQLExceptionExt;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.LinkedList;
 
 public class ProductDAO implements  IProductDAO{
@@ -76,6 +73,44 @@ public class ProductDAO implements  IProductDAO{
         }
         return product;
     }
+
+    //jdbc driver does not support this operation
+    @Override
+    public LinkedList<Product> getCollectionOfProducts(LinkedList<Integer> listOfIds) throws SQLException {
+        ConnectionPool manager = ConnectionPoolManager.getInstance();
+        Connection conn = manager.getConnection();
+        LinkedList<Product> products = new LinkedList<>();
+        String sql = "select * from pzwpj_schema.products join pzwpj_schema.categories on pzwpj_schema.products.categoryId = pzwpj_schema.categories.categoryId where pzwpj_schema.products.productId in ()";
+        try(PreparedStatement statement = conn.prepareStatement(sql))
+        {
+            Object[] objArrWithIds = listOfIds.toArray();
+            Array array = conn.createArrayOf("int", objArrWithIds);
+            statement.setArray(1,array);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next())
+            {
+                int prodId = rs.getInt("productId");
+                String prodName = rs.getString("productName");
+                String unit = rs.getString("unit");
+                int quantity = rs.getInt("quantity");
+                Category category = CategoryDAO.constructFromResultSet(rs,6);
+                Product product = new Product(prodId,category,prodName,unit,quantity);
+                products.add(product);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw prepareInfoAboutError(e, ErrorCodes.SELECT_LIST_PRODUCT_ERROR);
+        }
+        finally {
+            manager.releaseConnection(conn);
+        }
+        return products;
+
+    }
+
+
+
     @Override
     public int create(Product newProduct) throws SQLException {
         ConnectionPool manager = ConnectionPoolManager.getInstance();
@@ -152,6 +187,8 @@ public class ProductDAO implements  IProductDAO{
         }
         return retVal;
     }
+
+
 
 
     private SQLExceptionExt prepareInfoAboutError(SQLException e, int errorCode)

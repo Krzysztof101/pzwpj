@@ -1,6 +1,12 @@
 package model1.SQLErrorClasses;
 
 public class ErrorCodes {
+
+
+
+
+    private ErrorCodes() {}
+
     public final static String SEPARATOR="*";
     public final static int DELETE_SUPPLIER_ERROR=994;
     public final static int SELECT_SINGLE_SUPPLIER_ERROR=995;
@@ -31,12 +37,24 @@ public class ErrorCodes {
     public final static int DELETE_ORDER_ERROR=1022;
     public final static int SELECT_SINGLE_ORDER_ERROR=1023;
     public static final int UPDATE_ORDER_ERROR = 1024;
-    //TODO ADD UPDATE PRODUCT I UPDATE CUSTOMER
+    public static final int UPDATE_CATEGORY_PROCEDURE_ERROR = 1025;
+    public static final int SELECT_LIST_PRODUCT_ERROR = 1026;
+    public static final int SELECT_FUNCTION_GET_PRODUCT_MONTHLY_SALES_ERROR =1027 ;
+    public static final int SELECT_CUSTOMERS_IN_CITY_FUNCTION_ERROR = 1028;
+
 
     public static String getMessage(int errorCode)
     {
         switch (errorCode)
         {
+            case SELECT_CUSTOMERS_IN_CITY_FUNCTION_ERROR:
+                return "SELECT_CUSTOMERS_IN_CITY_FUNCTION_ERROR"+SEPARATOR;
+            case SELECT_FUNCTION_GET_PRODUCT_MONTHLY_SALES_ERROR:
+                return "SELECT_FUNCTION_GET_PRODUCT_MONTHLY_SALES_ERROR"+SEPARATOR;
+            case SELECT_LIST_PRODUCT_ERROR:
+                return "SELECT_LIST_PRODUCT_ERROR"+SEPARATOR;
+            case UPDATE_CATEGORY_PROCEDURE_ERROR:
+                return "UPDATE_CATEGORY_PROCEDURE_ERROR"+SEPARATOR;
             case UPDATE_ORDER_ERROR:
                 return "UPDATE_ORDER_ERROR"+SEPARATOR;
             case DELETE_SUPPLIER_ERROR:

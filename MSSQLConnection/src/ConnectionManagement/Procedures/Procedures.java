@@ -13,12 +13,16 @@ public class Procedures implements IProcedures{
         ConnectionPoolManager manager = ConnectionPoolManager.getInstance();
         Connection conn = manager.getConnection();
         String sql = "exec pzwpj_schema.updateCategory ?, ?, ?, ?;";
-
+                                                //ostatni z argumentów procedury jest argumentem wyjściowym
 
         int retVal = 0;
+
+        //przygotuj CallableStatement
+        //w przypadku wywołąnia procedury należy użyć CallableStatement
+
         try(CallableStatement statement = conn.prepareCall(sql);)
         {
-
+            //przekaż wartości do parametrów callableStatement
             statement.setInt(1, toUpdate.getId());
             statement.setString(2, toUpdate.getCategoryName());
             if(toUpdate.noDescription())
@@ -29,15 +33,23 @@ public class Procedures implements IProcedures{
             {
                 statement.setString(3, toUpdate.getDescription());
             }
+            //zarejestruj parametr wyjściowy
             statement.registerOutParameter(4, Types.INTEGER);
+            //wykonaj procedurę
             statement.execute();
+            //odzyskaj dane z procedury
             retVal = statement.getInt(4);
+
+
+            //przy wykorzystaniu takiej konstrukcji nie trzeba zamykać statement metodą close()
+            //statement.close();
         }
         catch (SQLException e)
         {
             throw prepareInfoAboutError(e, ErrorCodes.UPDATE_CATEGORY_PROCEDURE_ERROR);
         }
         finally {
+            //zwolnij zasoby
             ConnectionPoolManager.getInstance().releaseConnection(conn);
         }
         return retVal;

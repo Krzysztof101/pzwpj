@@ -52,6 +52,7 @@ public class BasicConnectionPool
 
     @Override
     public Connection getConnection() throws SQLException {
+
         if(connectionPool.size()!=0) {
             Connection connection = connectionPool
                     .remove(connectionPool.size() - 1);

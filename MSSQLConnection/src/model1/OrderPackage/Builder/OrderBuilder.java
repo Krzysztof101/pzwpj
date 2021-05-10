@@ -70,6 +70,7 @@ public class OrderBuilder implements  IOrderBuilder{
 
     private Order finishConstruction()
     {
+        //ustaw referncję tworzonego obiektu na null i zwróć tworzony obiekt
         var retVal = orderToBuild;
         orderToBuild = null;
         return retVal;

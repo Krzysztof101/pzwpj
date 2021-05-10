@@ -13,65 +13,39 @@ import java.util.LinkedList;
 public class Functions implements IFunctions{
     @Override
     public int getSalesOfProductInMonth(Product product, Timestamp date) throws SQLException {
-        /*
-        DECLARE @ret int;
-        DECLARE @date2 Date = ?;
-        DECLARE @prodId2 = ?;
-        exec @ret = pzwpj_schema.getSaleCountInMonth @prodId = @prodId2, @date= @date2;
-         */
-        //"exec ? = pzwpj_schema.getSaleCountInMonth @prodId =?, @date =? ";
+        //pobierz connection
         Connection conn = ConnectionPoolManager.getInstance().getConnection();
-        System.out.println(product);
-        System.out.println("id: "+ Integer.toString(product.getId())+ " date: "+ date);
+
+        //przygotuj zapytanie
         String sql = "select Sum( pzwpj_schema.getSaleCountInMonth(?,?) )";
         PreparedStatement statement = conn.prepareStatement(sql);
+
+        //ustaw wartości argumentów funkcji
         statement.setInt(1,product.getId());
         statement.setTimestamp(2, date);
         int retVal = -1;
         try {
-
-            ResultSet rs = statement.executeQuery();
-                    if(rs.next())
-                    {
-                        retVal = rs.getInt(1);
-                    }
-
-
-        }
-        catch (SQLException e)
-        {
-            throw prepareInfoAboutError(e, ErrorCodes.SELECT_FUNCTION_GET_PRODUCT_MONTHLY_SALES_ERROR);
-        }
-        finally {
-            statement.close();
-            ConnectionPoolManager.getInstance().releaseConnection(conn);
-        }
-        return retVal;
-
-        /*
-        Connection conn = ConnectionPoolManager.getInstance().getConnection();
-        String sql = "Select pzwpj_schema.getSaleCountInMonth(?, ?) 'sold';";
-        PreparedStatement statement = conn.prepareStatement(sql,Types.INTEGER);
-        statement.setInt(1,product.getId());
-        statement.setTimestamp(2, date);
-        int retVal = -1;
-        try {
+            //wykonaj zapytanie
             ResultSet rs = statement.executeQuery();
             if(rs.next())
             {
+                //pobierz wartości
                 retVal = rs.getInt(1);
             }
+
         }
         catch (SQLException e)
         {
             throw prepareInfoAboutError(e, ErrorCodes.SELECT_FUNCTION_GET_PRODUCT_MONTHLY_SALES_ERROR);
         }
         finally {
+            //zwolnij zasoby
             statement.close();
             ConnectionPoolManager.getInstance().releaseConnection(conn);
         }
         return retVal;
-         */
+
+
     }
     @Override
     public LinkedList<Customer> getAllCustomersInCity(String city) throws SQLException {
@@ -112,3 +86,39 @@ public class Functions implements IFunctions{
         return  ee;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+        Connection conn = ConnectionPoolManager.getInstance().getConnection();
+        String sql = "Select pzwpj_schema.getSaleCountInMonth(?, ?) 'sold';";
+        PreparedStatement statement = conn.prepareStatement(sql,Types.INTEGER);
+        statement.setInt(1,product.getId());
+        statement.setTimestamp(2, date);
+        int retVal = -1;
+        try {
+            ResultSet rs = statement.executeQuery();
+            if(rs.next())
+            {
+                retVal = rs.getInt(1);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw prepareInfoAboutError(e, ErrorCodes.SELECT_FUNCTION_GET_PRODUCT_MONTHLY_SALES_ERROR);
+        }
+        finally {
+            statement.close();
+            ConnectionPoolManager.getInstance().releaseConnection(conn);
+        }
+        return retVal;
+         */

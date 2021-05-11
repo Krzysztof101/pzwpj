@@ -11,7 +11,7 @@ import java.util.List;
 
 public class BasicConnectionPool
         implements ConnectionPoolWithClosing {
-
+    private Connection modelConnection;
     private String url;
     private String user;
     private String password;
@@ -37,8 +37,7 @@ public class BasicConnectionPool
         return new BasicConnectionPool(url, user, password, pool);
     }
 
-    private BasicConnectionPool(String url, String user, String password, List<Connection> pool)
-    {
+    private BasicConnectionPool(String url, String user, String password, List<Connection> pool) throws SQLException {
 
         this.desiredPoolSize = pool.size();
         this.url = url;
@@ -46,6 +45,7 @@ public class BasicConnectionPool
         this.password = password;
         this.connectionPool = pool;
         this.usedConnections = new LinkedList<Connection>();
+        this.modelConnection = BasicConnectionPool.createConnection(url,user,password);
     }
 
     // standard constructors
@@ -71,8 +71,15 @@ public class BasicConnectionPool
     }
     @Override
     public void resetConnection(Connection connection) throws SQLException {
-        //TODO add private static connection, that will serve as model to copy it's settings to connection
-        // AND write copying code here
+        if(!connection.getAutoCommit())
+        {connection.rollback();}
+        connection.setAutoCommit(modelConnection.getAutoCommit());
+        connection.setTransactionIsolation(modelConnection.getTransactionIsolation());
+        connection.setSchema(modelConnection.getSchema());
+        connection.setReadOnly(modelConnection.isReadOnly());
+        connection.setCatalog(modelConnection.getCatalog());
+        connection.setClientInfo(modelConnection.getClientInfo());
+        connection.setHoldability(modelConnection.getHoldability());
     }
 
     public int getDesiredPoolSize(){return desiredPoolSize;}
@@ -111,6 +118,7 @@ public class BasicConnectionPool
         {
             connection = BasicConnectionPool.createConnection(url,user,password);
         }
+        resetConnection(connection);
         if(getSize()<desiredPoolSize)
         {
             connectionPool.add(connection);
@@ -185,6 +193,9 @@ public class BasicConnectionPool
             }
         }
         usedConnections.clear();
+        if(!modelConnection.isClosed())
+        modelConnection.close();
+        modelConnection = null;
     }
 
 

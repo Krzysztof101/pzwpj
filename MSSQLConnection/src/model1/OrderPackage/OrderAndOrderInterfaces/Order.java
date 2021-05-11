@@ -21,6 +21,11 @@ public class Order implements  OrderWithAllMethods{
     private Address deliveryAddress;
     private LinkedList<Product> products;
     private LinkedList<Integer> quantities;
+
+    public static int getNoIdInDb() {
+        return 0;
+    }
+
     public String toString()
     {
         StringBuilder builder = new StringBuilder();

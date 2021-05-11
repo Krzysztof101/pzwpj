@@ -32,6 +32,7 @@ public class OrderDAO implements IOrderDAO {
         //zapisz poprzednie właściwości obiektu connection, by je później przywrócić
         boolean previousAutoCommit = conn.getAutoCommit();
         var tranIsol = conn.getTransactionIsolation();
+        int prevOrdId = order.getId();
         conn.setAutoCommit(false);
 
         //rozpocznij transakcję
@@ -67,12 +68,13 @@ public class OrderDAO implements IOrderDAO {
             //wykonaj insert na tabeli order
             retVal += statement.executeUpdate();
 
-            if(retVal>0) {
+
                 //pobierz wygenerowany klucz
                 ResultSet rs = statement.getGeneratedKeys();
                 if(rs.next())
                 newOrderId = rs.getInt(1);
-            }
+
+                order.setId(newOrderId);
 
         //przygotuj obiekt PreparedStatement do wpisywania wartości do tabeli order details
         productsStatement.setInt(1,newOrderId);
@@ -81,14 +83,22 @@ public class OrderDAO implements IOrderDAO {
             //przekazuj do obiektu PreparedStatement dane nt. kolejnego zamawianego produktu
             productsStatement.setInt(2,order.getProduct(ii).getId());
             productsStatement.setInt(3, order.getQuantityOfProductAtPosition(ii));
-            //wstaw dane nt. produktu
-            retVal+=productsStatement.executeUpdate();
+            //dodaj dane do wstawienia do batch-u
+            productsStatement.addBatch();
+
+        }
+        //wykonaj zbatchowane wstawianie danych
+        int[] batchRetVals =productsStatement.executeBatch();
+        for(int k : batchRetVals)
+        {
+            retVal+=k;
         }
         //zatwierdź wprowadzone w bazie zmiany
         conn.commit();
         }
         catch (SQLException e)
         {
+            order.setId(prevOrdId);
             //w wypadku błędu cofnij zmiany
             conn.rollback();
             throw prepareInfoAboutError(e, ErrorCodes.INSERT_ORDER_ERROR);
@@ -194,14 +204,19 @@ public class OrderDAO implements IOrderDAO {
                 ResultSet rs = statement.getGeneratedKeys();
                 if (rs.next())
                     newOrderId = rs.getInt(1);
-
+                    order.setId(newOrderId);
 
                 productsStatement.setInt(1, newOrderId);
                 for (int ii = 0; ii < order.size(); ii++) {
 
                     productsStatement.setInt(2, order.getProduct(ii).getId());
                     productsStatement.setInt(3, order.getQuantityOfProductAtPosition(ii));
-                    retVal += productsStatement.executeUpdate();
+                    productsStatement.addBatch();
+                }
+                int[] batchRetVals =productsStatement.executeBatch();
+                for(int k : batchRetVals)
+                {
+                    retVal+=k;
                 }
             }
         }

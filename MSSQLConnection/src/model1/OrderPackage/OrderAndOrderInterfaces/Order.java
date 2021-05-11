@@ -26,6 +26,19 @@ public class Order implements  OrderWithAllMethods{
         return 0;
     }
 
+    private Order()
+    {
+        products = new LinkedList<>();
+        quantities = new LinkedList<>();
+    }
+
+
+    public static OrderBuilder create()
+    {
+        return new OrderBuilder(new Order());
+    }
+
+
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
@@ -119,17 +132,7 @@ public class Order implements  OrderWithAllMethods{
         return products.size();
     }
 
-    private Order()
-    {
-        products = new LinkedList<>();
-        quantities = new LinkedList<>();
-    }
 
-
-    public static OrderBuilder create()
-    {
-        return new OrderBuilder(new Order());
-    }
 
     @Override
     public void setId(int id) { this.id = id; }

@@ -59,9 +59,9 @@ public class Main {
         orderBuilder.setDeliveryAddress(address);
         orderBuilder.setDescription(Order.getNoDescription());
         var dd =Calendar.getInstance().getTime();
-        Timestamp orderDate = new Timestamp(dd.getTime()  - 48*3600000 );
-        Timestamp shipDate = new Timestamp(dd.getTime()  - 24*3600000 );
-        Timestamp requireDate = new Timestamp(dd.getTime()  + 24*3600000 );
+        Timestamp orderDate = new Timestamp(dd.getTime()  - 48*3600000 ); //dwa dni temu
+        Timestamp shipDate = new Timestamp(dd.getTime()  - 24*3600000 ); // dzień temu
+        Timestamp requireDate = new Timestamp(dd.getTime()  + 24*3600000 ); //dzień później
         orderBuilder.setDate( orderDate,DateType.order);
         orderBuilder.setDate( requireDate,DateType.require);
         orderBuilder.setDate(shipDate, DateType.ship);
@@ -80,6 +80,12 @@ public class Main {
 
         orderDAO.create(insertedOrder);
         System.out.println(insertedOrder);
+
+        IFunctions functions = new Functions();
+        var list = functions.getAllCustomersInCity("Warszawa");
+        printAll(list);
+        var sales = functions.getSalesOfProductInMonth(product,orderDate);
+
 
         Runtime.getRuntime().addShutdownHook( new Thread(new Runnable(){
 

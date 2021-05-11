@@ -26,51 +26,55 @@ public class OrderDAO implements IOrderDAO {
 
         //pobierz obiekt Connection
 
-        ConnectionPool manager = ConnectionPoolManager.getInstance();
-        Connection conn = manager.getConnection();
+        ConnectionPool connectionPool = ConnectionPoolManager.getInstance();
+        Connection connection = connectionPool.getConnection();
 
         //zapisz poprzednie właściwości obiektu connection, by je później przywrócić
-        boolean previousAutoCommit = conn.getAutoCommit();
-        var tranIsol = conn.getTransactionIsolation();
+        boolean previousAutoCommit = connection.getAutoCommit();
+        var tranIsol = connection.getTransactionIsolation();
         int prevOrdId = order.getId();
-        conn.setAutoCommit(false);
+        connection.setAutoCommit(false);
 
         //rozpocznij transakcję
 
         //utwórz string sql i prepared statement
-        conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+        connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         String sql = "insert into pzwpj_schema.orders(customerId, orderDate, shipdate, requireDate, freight, description, addressId)" +
                 " values (?, ?, ?, ?, ?, ?, ?);";
         String sql2 = "insert into pzwpj_schema.orderDetails(orderId,productId,quantity) values(?,?,?);";
-        var productsStatement  =conn.prepareStatement(sql2, PreparedStatement.RETURN_GENERATED_KEYS);
+
+
         //ustaw parametr RETURN_GENERATED_KEYS, by móc pobrać automatycznie wygenerowany klucz
+
         int i=1;
-        PreparedStatement statement = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        PreparedStatement ordersStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        var productsStatement  =connection.prepareStatement(sql2);                                                                                          //, PreparedStatement.RETURN_GENERATED_KEYS
+
 
         //przekaż wartości do tabeli order
-        statement.setInt(i++,order.getBuyer().getId() );
-        statement.setTimestamp(i++, order.getOrderDate());
-        statement.setTimestamp(i++, order.getShipDate());
-        statement.setTimestamp(i++, order.getRequireDate());
-        statement.setBigDecimal(i++, order.getFreight());
+        ordersStatement.setInt(i++,order.getBuyer().getId() );
+        ordersStatement.setTimestamp(i++, order.getOrderDate());
+        ordersStatement.setTimestamp(i++, order.getShipDate());
+        ordersStatement.setTimestamp(i++, order.getRequireDate());
+        ordersStatement.setBigDecimal(i++, order.getFreight());
         if(!Order.noDescription(order.getDesccription()))
         {
-            statement.setString(i++, order.getDesccription());
+            ordersStatement.setString(i++, order.getDesccription());
         }
         else
         {
-            statement.setNull(i++, Types.NULL);
+            ordersStatement.setNull(i++, Types.NULL);
         }
-        statement.setInt(i++, order.getDeliveryAddress().getId());
+        ordersStatement.setInt(i++, order.getDeliveryAddress().getId());
         int retVal=0;
         int newOrderId = 0;
         try {
             //wykonaj insert na tabeli order
-            retVal += statement.executeUpdate();
+            retVal += ordersStatement.executeUpdate();
 
 
                 //pobierz wygenerowany klucz
-                ResultSet rs = statement.getGeneratedKeys();
+                ResultSet rs = ordersStatement.getGeneratedKeys();
                 if(rs.next())
                 newOrderId = rs.getInt(1);
 
@@ -94,23 +98,23 @@ public class OrderDAO implements IOrderDAO {
             retVal+=k;
         }
         //zatwierdź wprowadzone w bazie zmiany
-        conn.commit();
+        connection.commit();
         }
         catch (SQLException e)
         {
             order.setId(prevOrdId);
             //w wypadku błędu cofnij zmiany
-            conn.rollback();
+            connection.rollback();
             throw prepareInfoAboutError(e, ErrorCodes.INSERT_ORDER_ERROR);
         }
         finally {
             //przywróć obiek Connection do poprzedniego stanu i zwolnij zasoby
 
             productsStatement.close();
-            statement.close();
-            conn.setTransactionIsolation(tranIsol);
-            conn.setAutoCommit(previousAutoCommit);
-            manager.releaseConnection(conn);
+            ordersStatement.close();
+            connection.setTransactionIsolation(tranIsol);
+            connection.setAutoCommit(previousAutoCommit);
+            connectionPool.releaseConnection(connection);
 
         }
         return retVal;
